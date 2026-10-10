@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cantina · Cardápio</title>
 <meta name="description" content="Faça seu pedido na cantina e receba a confirmação no WhatsApp.">
-<!-- Prévia do link no WhatsApp: troque SEU-SITE.com pelo endereço onde hospedar o cardápio -->
+<!-- Prévia do link no WhatsApp: troque cardapio.painellipe.online pelo endereço onde hospedar o cardápio -->
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="Cantina do Campus · Cardápio">
 <meta property="og:description" content="Escolha, peça e receba a confirmação no WhatsApp.">
-<meta property="og:url" content="https://cardapio.painellipe.online">
+<meta property="og:url" content="https://cardapio.painellipe.online/">
 <meta property="og:image" content="https://cardapio.painellipe.online/capa.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -233,13 +233,18 @@ document.addEventListener("click", (e) => {
 });
 
 const sections = () => [...document.querySelectorAll("main section")];
+let activeIdx = 0;
+function setActive(i) {
+  const chips = [...document.querySelectorAll(".chip")];
+  chips.forEach((c, k) => c.setAttribute("aria-current", k === i ? "true" : "false"));
+  // rola só a barra de categorias (na horizontal), nunca a página
+  const box = $("#chips"), c = chips[i];
+  box.scrollTo({ left: c.offsetLeft - (box.clientWidth - c.offsetWidth) / 2, behavior: "smooth" });
+}
 window.addEventListener("scroll", () => {
   let current = 0;
   sections().forEach((s, i) => { if (s.getBoundingClientRect().top < 160) current = i; });
-  document.querySelectorAll(".chip").forEach((c, i) => {
-    c.setAttribute("aria-current", i === current ? "true" : "false");
-    if (i === current) c.scrollIntoView({ inline: "center", block: "nearest" });
-  });
+  if (current !== activeIdx) { activeIdx = current; setActive(current); }
 }, { passive: true });
 
 /* ---- folha do pedido ---- */
