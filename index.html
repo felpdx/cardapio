@@ -37,7 +37,7 @@
   --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth;scroll-padding-top:120px}
+html{scroll-behavior:smooth;scroll-padding-top:150px}
 body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.45;padding-bottom:110px;-webkit-tap-highlight-color:transparent}
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
@@ -51,21 +51,49 @@ header h1{font-family:var(--logo);font-weight:400;font-size:clamp(3.2rem,14vw,4.
 .mascote{flex:none;width:clamp(104px,30vw,150px);height:auto;margin-bottom:-18px;transform:rotate(4deg)}
 header p{margin-top:6px;color:#fff;max-width:36ch}
 
-nav{position:sticky;top:0;z-index:5;background:var(--bg);margin-top:-30px;border-radius:24px 24px 0 0;padding:14px 0 10px;box-shadow:0 -1px 0 var(--line)}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 20px;scrollbar-width:none}
+/* barra de categorias: vidro fosco, fixa no topo ao rolar */
+nav{position:sticky;top:0;z-index:5;margin-top:-30px;border-radius:24px 24px 0 0;padding:14px 0 10px;
+  background:rgba(253,233,207,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 -1px 0 var(--line)}
+.chips{display:flex;gap:12px;overflow-x:auto;padding:2px 20px 6px;scrollbar-width:none;scroll-snap-type:x proximity}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;font-weight:700;font-size:.92rem;cursor:pointer}
-.chip[aria-current="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.cat{flex:none;width:84px;scroll-snap-align:start;border-radius:22px;padding:12px 6px 9px;text-align:center;cursor:pointer;
+  background:rgba(107,15,24,.42);border:1px solid rgba(255,255,255,.4);color:#fff3dc;text-shadow:0 1px 2px rgba(75,23,21,.55);
+  -webkit-backdrop-filter:blur(10px) saturate(140%);backdrop-filter:blur(10px) saturate(140%);
+  box-shadow:0 4px 14px rgba(107,15,24,.14),inset 0 1px 0 rgba(255,255,255,.45);
+  transition:transform .2s,background .2s}
+.cat svg{width:38px;height:38px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cat span{display:block;margin-top:5px;font-size:.78rem;font-weight:700}
+.cat[aria-current="true"]{background:rgba(227,30,45,.78);transform:translateY(-2px)}
+.cat:active{transform:scale(.96)}
+
+/* fundo: cor sólida + ícones em diagonal bem apagados e levemente desfocados */
+.fundo{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg)}
+.fundo svg{position:absolute;left:-30%;top:-30%;width:160%;height:160%;transform:rotate(-18deg);opacity:.28;filter:blur(1.5px)}
+
+/* vidro fosco; sem suporte a backdrop-filter, sobe a opacidade para manter o texto legível */
+.vidro{background:rgba(255,248,238,.5);border:1px solid rgba(255,255,255,.7);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:0 8px 24px rgba(107,15,24,.12),inset 0 1px 0 rgba(255,255,255,.7)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.vidro{background:rgba(255,248,238,.92)}}
 
 main{padding:6px 20px}
 section{margin-top:22px}
-section h2{font-family:var(--head);font-size:1.35rem;font-weight:800;margin-bottom:10px}
-.item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
-.emoji{flex:none;width:56px;height:56px;border-radius:14px;background:#ffe3a8;display:grid;place-items:center;font-size:1.9rem}
-.info{flex:1;min-width:0}
-.info b{display:block;font-weight:700}
-.info small{display:block;color:var(--muted);font-size:.85rem;margin-top:1px}
-.price{font-weight:700;margin-top:4px}
+section h2{font-family:var(--head);font-size:1.35rem;font-weight:800;margin-bottom:4px;display:flex;align-items:baseline;gap:10px}
+section h2::after{content:"";flex:1;height:2px;background:var(--ink);opacity:.15;border-radius:2px}
+/* itens: cada categoria é um carrossel horizontal de cards com foto */
+.itens{display:flex;gap:14px;overflow-x:auto;margin:8px -20px 0;padding:6px 20px 18px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.itens::-webkit-scrollbar{display:none}
+.item{flex:none;width:210px;scroll-snap-align:start;border-radius:24px;overflow:hidden;display:flex;flex-direction:column}
+.foto{position:relative;aspect-ratio:4/3;background:rgba(227,30,45,.08)}
+.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.foto .sem{position:absolute;inset:0;display:grid;place-items:center;font-size:2.6rem}
+.info{min-width:0;padding:12px 14px 8px;flex:1}
+.info b{display:block;font-family:var(--head);font-weight:800;font-size:1.05rem;line-height:1.2}
+.info small{display:block;color:var(--muted);font-size:.87rem;margin-top:3px;min-height:2.6em}
+.price{font-weight:800;margin-top:6px;color:var(--red);font-variant-numeric:tabular-nums}
+.item [data-ctrl]{padding:0 14px 14px}
+.item .add{width:100%}
+.item .qty{justify-content:space-between}
 .add{flex:none;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:10px 16px;cursor:pointer}
 .add:active{transform:scale(.96)}
 .qty{flex:none;display:flex;align-items:center;gap:2px;background:var(--bg);border-radius:12px;padding:3px}
@@ -95,8 +123,32 @@ textarea{resize:vertical;min-height:70px}
 .hint{color:var(--muted);font-size:.82rem;margin-top:4px}
 .error{color:var(--err);font-size:.88rem;margin-top:10px;font-weight:500}
 .send{width:100%;margin-top:18px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:1.05rem;border-radius:14px;padding:16px;cursor:pointer}
-.send:disabled{opacity:.6;cursor:wait}
+.send{position:relative;overflow:hidden;isolation:isolate}
+/* barra de carregamento: preenche o botão enquanto o pedido é enviado.
+   Não há progresso real do fetch, então ela sobe até ~90% e só completa quando o servidor responde. */
+.send::before{content:"";position:absolute;inset:0;z-index:-1;width:0;background:var(--orange)}
+.send.carregando::before{animation:encher 6s cubic-bezier(.2,.7,.3,1) forwards}
+.send.concluido::before{animation:none;width:100%;transition:width .25s ease-out}
+@keyframes encher{from{width:0}to{width:90%}}
+.send:disabled{cursor:wait}
 .empty{color:var(--muted);padding:18px 0}
+
+/* esgotado */
+.item.esgotado .foto img,.item.esgotado .foto .sem{filter:grayscale(1);opacity:.5}
+.item.esgotado .info b{color:var(--muted)}
+.tag-esgotado{display:inline-block;margin-top:4px;font-size:.78rem;font-weight:800;color:var(--err);text-transform:uppercase;letter-spacing:.04em}
+.add:disabled{background:var(--line);color:var(--muted);cursor:not-allowed;transform:none}
+
+/* pagamento */
+.pgto{display:grid;gap:8px;margin-top:6px}
+.pgto label{margin:0;display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-weight:600;font-size:.95rem;cursor:pointer}
+.pgto input{width:auto;margin:0}
+.pix{margin-top:16px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px;text-align:left}
+.pix b{display:block;word-break:break-all;margin:4px 0 10px;font-size:1.05rem}
+.pix .row{display:flex;gap:8px;flex-wrap:wrap}
+.pix button,.pix a{flex:1;text-align:center;border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer;text-decoration:none;background:var(--accent);color:var(--accent-ink)}
+.pix a{background:#25d366;color:#fff}
+.codigo-grande{font-size:2.4rem;font-weight:900;letter-spacing:.06em;margin:4px 0 10px}
 
 /* confirmação */
 .done{text-align:center;padding:24px 8px 8px}
@@ -113,6 +165,16 @@ textarea{resize:vertical;min-height:70px}
 <!-- Mascote: desenhado uma vez aqui e reaproveitado com <use href="#mascote"> -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
+    <g id="luva" stroke-linecap="round" stroke-linejoin="round">
+      <g fill="none" stroke="#6b0f18" stroke-width="13">
+        <path d="M-8 -3 L-9 -15 M0 -4 L0 -18 M8 -3 L9 -15 M-10 3 L-17 -4"/>
+      </g>
+      <ellipse cx="0" cy="2" rx="12" ry="9" fill="#6b0f18" stroke="#6b0f18" stroke-width="5"/>
+      <g fill="none" stroke="#fff" stroke-width="7">
+        <path d="M-8 -3 L-9 -15 M0 -4 L0 -18 M8 -3 L9 -15 M-10 3 L-17 -4"/>
+      </g>
+      <ellipse cx="0" cy="2" rx="12" ry="9" fill="#fff"/>
+    </g>
     <path id="coxa" d="M100 18 C112 18 120 28 126 44 C140 78 170 110 168 150 C166 186 138 204 100 204 C62 204 34 186 32 150 C30 110 60 78 74 44 C80 28 88 18 100 18 Z"/>
   </defs>
   <symbol id="mascote" viewBox="-8 0 216 240">
@@ -142,14 +204,8 @@ textarea{resize:vertical;min-height:70px}
   <circle cx="62" cy="172" r="2.5"/><circle cx="82" cy="186" r="2.5"/>
   <circle cx="134" cy="182" r="2.5"/><circle cx="146" cy="158" r="2.5"/><circle cx="118" cy="170" r="2"/>
 </g>
-<g fill="#fff3dc" stroke="#6b0f18" stroke-width="5" stroke-linecap="round">
-  <circle cx="20" cy="114" r="10"/>
-  <circle cx="180" cy="114" r="10"/>
-</g>
-<g fill="none" stroke="#6b0f18" stroke-width="5" stroke-linecap="round">
-  <path d="M16 106 L13 94 M24 105 L26 93"/>
-  <path d="M180 104 L180 92" stroke-width="6"/>
-</g>
+<use href="#luva" transform="translate(20 114)"/>
+<use href="#luva" transform="translate(180 114) scale(-1 1)"/>
 <g fill="#e31e2d" stroke="#6b0f18" stroke-width="5" stroke-linejoin="round">
   <path d="M71 58 C69 0 131 0 129 58 Z"/>
   <path d="M126 54 C142 50 158 54 162 63 C148 67 134 66 124 62 Z"/>
@@ -164,7 +220,31 @@ textarea{resize:vertical;min-height:70px}
 <circle cx="134" cy="136" r="7" fill="#f58220" opacity=".55"/>
 <path d="M82 134 Q100 152 118 134" fill="none" stroke="#6b0f18" stroke-width="5" stroke-linecap="round"/>
   </symbol>
+  <symbol id="i-lanche" viewBox="0 0 48 48"><path d="M8 22a16 12 0 0 1 32 0z"/><path d="M8 27q4 3 8 0t8 0 8 0 8 0"/><path d="M9 31h30"/><path d="M8 35h32v2a5 5 0 0 1-5 5H13a5 5 0 0 1-5-5z"/></symbol>
+  <symbol id="i-pizza" viewBox="0 0 48 48"><path d="M24 43 7 12q17-8 34 0z"/><path d="M13 19q11-4 22 0"/><circle cx="21" cy="25" r="2"/><circle cx="28" cy="22" r="1.6"/><circle cx="24" cy="33" r="1.8"/></symbol>
+  <symbol id="i-batata" viewBox="0 0 48 48"><path d="M12 26h24l-3 17H15z"/><path d="M16 26V11M22 26V6M28 26V8M34 26V13"/></symbol>
+  <symbol id="i-bebida" viewBox="0 0 48 48"><path d="M14 18h20l-3 25H17z"/><path d="M12 18h24"/><path d="M26 18l4-11h6"/></symbol>
+  <symbol id="i-doce" viewBox="0 0 48 48"><path d="M10 42h28V28H10z"/><path d="M10 35q3.5 3 7 0t7 0 7 0 7 0"/><path d="M24 28v-5"/><circle cx="24" cy="19" r="3.5"/></symbol>
+  <symbol id="i-salgado" viewBox="0 0 48 48"><path d="M24 5c-4 9-15 14-15 27a15 9 0 0 0 30 0C39 19 28 14 24 5z"/><path d="M18 30q6 5 12 0"/></symbol>
 </svg>
+
+<!-- Fundo diagonal: padrão de ícones repetido; o SVG inteiro é girado no CSS -->
+<div class="fundo" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="padrao" width="170" height="170" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#e31e2d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <use href="#i-lanche" x="10" y="10" width="52" height="52"/>
+          <use href="#i-pizza" x="100" y="20" width="52" height="52"/>
+          <use href="#i-batata" x="20" y="100" width="52" height="52"/>
+          <use href="#i-bebida" x="95" y="95" width="52" height="52" stroke="#f58220"/>
+          <use href="#i-doce" x="60" y="55" width="40" height="40" stroke="#f58220"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#padrao)"/>
+  </svg>
+</div>
 
 <header>
   <div class="wrap head">
@@ -188,38 +268,39 @@ textarea{resize:vertical;min-height:70px}
   <div class="sheet" id="sheet"></div>
 </div>
 
+<script src="config.js"></script>
 <script>
 /* ============================================================
-   CONFIGURAÇÃO — edite só esta parte
+   CONFIGURAÇÃO (URLs do n8n, Pix, WhatsApp) fica em config.js
    ============================================================ */
+const CFG = window.CONFIG || {};
 
-// URL do Webhook (POST) do seu fluxo no n8n.
-// Deixe vazio para testar: o cardápio funciona, mas não envia nada.
-const WEBHOOK_URL = "https://webhook.painellipe.online/webhook/receber-pedido-cantina";
-
-// Cardápio. Para trocar itens/preços, edite aqui.
-// "id" precisa ser único. "emoji" aparece no lugar da foto.
-const MENU = [
+// Cardápio de reserva. O cardápio oficial é a aba "Cardapio" da planilha (preço e esgotado são
+// editados pelo painel): quando ela carrega, substitui este MENU. Este só aparece se a planilha
+// estiver fora do ar, e por isso precisa manter os mesmos "id".
+// "id" precisa ser único. "emoji" aparece enquanto a foto não existe.
+// "foto" é o caminho da imagem (pasta fotos/, relativa a este arquivo). Deixe "" se não tiver.
+let MENU = [
   { categoria: "Salgados", itens: [
-    { id: "coxinha",  nome: "Coxinha de frango",   desc: "Massa macia, recheio cremoso", preco: 6.00,  emoji: "🍗" },
-    { id: "pao-queijo", nome: "Pão de queijo",      desc: "Quentinho, saindo do forno",   preco: 4.50,  emoji: "🧀" },
-    { id: "pastel",   nome: "Pastel de carne",      desc: "Crocante, tamanho grande",     preco: 7.50,  emoji: "🥟" },
-    { id: "misto",    nome: "Misto quente",         desc: "Presunto e queijo",            preco: 8.00,  emoji: "🥪" }
+    { id: "coxinha",  nome: "Coxinha de frango",   desc: "Massa macia, recheio cremoso", preco: 6.00,  emoji: "🍗", foto: "fotos/coxinha.jpg" },
+    { id: "pao-queijo", nome: "Pão de queijo",      desc: "Quentinho, saindo do forno",   preco: 4.50,  emoji: "🧀", foto: "fotos/pao-queijo.jpg" },
+    { id: "pastel",   nome: "Pastel de carne",      desc: "Crocante, tamanho grande",     preco: 7.50,  emoji: "🥟", foto: "fotos/pastel.jpg" },
+    { id: "misto",    nome: "Misto quente",         desc: "Presunto e queijo",            preco: 8.00,  emoji: "🥪", foto: "fotos/misto.jpg" }
   ]},
   { categoria: "Lanches", itens: [
-    { id: "x-burger", nome: "X-Burger",             desc: "Hambúrguer, queijo e salada",  preco: 15.00, emoji: "🍔" },
-    { id: "x-bacon",  nome: "X-Bacon",              desc: "Hambúrguer, queijo e bacon",   preco: 18.00, emoji: "🥓" },
-    { id: "natural",  nome: "Sanduíche natural",    desc: "Frango, cenoura e alface",     preco: 10.00, emoji: "🥬" }
+    { id: "x-burger", nome: "X-Burger",             desc: "Hambúrguer, queijo e salada",  preco: 15.00, emoji: "🍔", foto: "fotos/x-burger.jpg" },
+    { id: "x-bacon",  nome: "X-Bacon",              desc: "Hambúrguer, queijo e bacon",   preco: 18.00, emoji: "🥓", foto: "fotos/x-bacon.jpg" },
+    { id: "natural",  nome: "Sanduíche natural",    desc: "Frango, cenoura e alface",     preco: 10.00, emoji: "🥬", foto: "fotos/natural.jpg" }
   ]},
   { categoria: "Bebidas", itens: [
-    { id: "refri",    nome: "Refrigerante lata",    desc: "350 ml",                       preco: 5.00,  emoji: "🥤" },
-    { id: "suco",     nome: "Suco natural",         desc: "Laranja ou maracujá, 400 ml",  preco: 7.00,  emoji: "🍊" },
-    { id: "agua",     nome: "Água mineral",         desc: "500 ml",                       preco: 3.00,  emoji: "💧" },
-    { id: "cafe",     nome: "Café",                 desc: "Coado na hora",                preco: 3.50,  emoji: "☕" }
+    { id: "refri",    nome: "Refrigerante lata",    desc: "350 ml",                       preco: 5.00,  emoji: "🥤", foto: "fotos/refri.jpg" },
+    { id: "suco",     nome: "Suco natural",         desc: "Laranja ou maracujá, 400 ml",  preco: 7.00,  emoji: "🍊", foto: "fotos/suco.jpg" },
+    { id: "agua",     nome: "Água mineral",         desc: "500 ml",                       preco: 3.00,  emoji: "💧", foto: "fotos/agua.jpg" },
+    { id: "cafe",     nome: "Café",                 desc: "Coado na hora",                preco: 3.50,  emoji: "☕", foto: "fotos/cafe.jpg" }
   ]},
   { categoria: "Doces", itens: [
-    { id: "brigadeiro", nome: "Brigadeiro",         desc: "Tradicional",                  preco: 3.00,  emoji: "🍫" },
-    { id: "bolo",     nome: "Fatia de bolo",        desc: "Sabor do dia",                 preco: 6.00,  emoji: "🍰" }
+    { id: "brigadeiro", nome: "Brigadeiro",         desc: "Tradicional",                  preco: 3.00,  emoji: "🍫", foto: "fotos/brigadeiro.jpg" },
+    { id: "bolo",     nome: "Fatia de bolo",        desc: "Sabor do dia",                 preco: 6.00,  emoji: "🍰", foto: "fotos/bolo.jpg" }
   ]}
 ];
 
@@ -228,28 +309,38 @@ const MENU = [
    ============================================================ */
 const $ = (s) => document.querySelector(s);
 const brl = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const ALL = MENU.flatMap(c => c.itens);
+let ALL = MENU.flatMap(c => c.itens);
+// Ícone de cada categoria na barra. Só visual: o MENU não muda. Categoria nova sem ícone usa o de lanche.
+const ICONES = { Salgados: "i-salgado", Lanches: "i-lanche", Pizzas: "i-pizza", "Porções": "i-batata", Bebidas: "i-bebida", Doces: "i-doce" };
+const iconeDe = (cat) => `<svg aria-hidden="true"><use href="#${ICONES[cat] || "i-lanche"}"/></svg>`;
 const cart = {};          // { id: quantidade }
 let sending = false;
+let pedidoPendente = null; // pedido não confirmado: reenvio usa o mesmo pedido_id (evita duplicata)
 
 /* ---- cardápio ---- */
 function renderMenu() {
   $("#chips").innerHTML = MENU.map((c, i) =>
-    `<button class="chip" data-cat="cat-${i}" ${i === 0 ? 'aria-current="true"' : ""}>${c.categoria}</button>`
+    `<button class="cat" data-cat="cat-${i}" ${i === 0 ? 'aria-current="true"' : ""}>${iconeDe(c.categoria)}<span>${c.categoria}</span></button>`
   ).join("");
 
   $("#menu").innerHTML = MENU.map((c, i) => `
     <section id="cat-${i}">
       <h2>${c.categoria}</h2>
+      <div class="itens">
       ${c.itens.map(it => `
-        <div class="item">
-          <div class="emoji" aria-hidden="true">${it.emoji}</div>
+        <article class="item vidro ${it.disponivel === false ? "esgotado" : ""}">
+          <div class="foto">
+            <span class="sem" aria-hidden="true">${it.emoji}</span>
+            ${it.foto ? `<img src="${it.foto}" alt="${it.nome}" loading="lazy" onerror="this.remove()">` : ""}
+          </div>
           <div class="info">
             <b>${it.nome}</b><small>${it.desc}</small>
             <div class="price">${brl(it.preco)}</div>
+            ${it.disponivel === false ? '<span class="tag-esgotado">Esgotado</span>' : ""}
           </div>
           <div data-ctrl="${it.id}"></div>
-        </div>`).join("")}
+        </article>`).join("")}
+      </div>
     </section>`).join("");
 
   ALL.forEach(it => renderCtrl(it.id));
@@ -261,10 +352,18 @@ function renderCtrl(id) {
   if (!el) return;
   el.innerHTML = q
     ? `<div class="qty"><button data-dec="${id}" aria-label="Tirar um">−</button><span>${q}</span><button data-inc="${id}" aria-label="Adicionar mais um">+</button></div>`
-    : `<button class="add" data-inc="${id}">Adicionar</button>`;
+    : indisponivel(id)
+      ? `<button class="add" disabled>Esgotado</button>`
+      : `<button class="add" data-inc="${id}">Adicionar</button>`;
+}
+
+function indisponivel(id) {
+  return ALL.find(x => x.id === id)?.disponivel === false;
 }
 
 function change(id, delta) {
+  if (delta > 0 && indisponivel(id)) return;
+  pedidoPendente = null;   // carrinho mudou: o próximo envio é um pedido novo
   const q = Math.max(0, (cart[id] || 0) + delta);
   if (q) cart[id] = q; else delete cart[id];
   renderCtrl(id);
@@ -290,7 +389,7 @@ function updateBar() {
 
 /* ---- navegação por categoria ---- */
 document.addEventListener("click", (e) => {
-  const chip = e.target.closest(".chip");
+  const chip = e.target.closest(".cat");
   if (chip) {
     document.getElementById(chip.dataset.cat).scrollIntoView();
     return;
@@ -303,7 +402,7 @@ document.addEventListener("click", (e) => {
 const sections = () => [...document.querySelectorAll("main section")];
 let activeIdx = 0;
 function setActive(i) {
-  const chips = [...document.querySelectorAll(".chip")];
+  const chips = [...document.querySelectorAll(".cat")];
   chips.forEach((c, k) => c.setAttribute("aria-current", k === i ? "true" : "false"));
   // rola só a barra de categorias (na horizontal), nunca a página
   const box = $("#chips"), c = chips[i];
@@ -351,6 +450,13 @@ function renderSheet(keep = {}) {
     <input id="zap" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" value="${keep.zap || ""}">
     <div class="hint">Vamos avisar por aqui quando o pedido for aceito.</div>
 
+    ${CFG.PIX_CHAVE ? `
+    <label>Pagamento</label>
+    <div class="pgto">
+      <label><input type="radio" name="forma" value="balcao" ${keep.forma !== "pix" ? "checked" : ""}> Pagar na retirada</label>
+      <label><input type="radio" name="forma" value="pix" ${keep.forma === "pix" ? "checked" : ""}> Pagar com Pix agora</label>
+    </div>` : ""}
+
     <label for="obs">Observação (opcional)</label>
     <textarea id="obs" placeholder="Ex.: sem cebola, suco de maracujá">${keep.obs || ""}</textarea>
 
@@ -362,11 +468,17 @@ $("#sheet").addEventListener("click", (e) => {
   if (e.target.closest("[data-close]")) closeSheet();
   if (e.target.closest("#send")) sendOrder();
   if (e.target.closest("#again")) { closeSheet(); }
+  if (e.target.closest("#copiarPix")) copiarPix();
 });
 
 /* ---- envio ---- */
 function snapshotForm() {
-  return { nome: $("#nome")?.value || "", zap: $("#zap")?.value || "", obs: $("#obs")?.value || "" };
+  return {
+    nome: $("#nome")?.value || "",
+    zap: $("#zap")?.value || "",
+    obs: $("#obs")?.value || "",
+    forma: document.querySelector('input[name="forma"]:checked')?.value || "balcao"
+  };
 }
 function normalizePhone(raw) {
   let d = raw.replace(/\D/g, "");
@@ -390,28 +502,31 @@ async function sendOrder() {
   if (phone.length < 12 || phone.length > 13) return showError("Informe um WhatsApp válido, com DDD.", "zap");
   showError("", null);
 
-  const { total } = totals();
-  const pedido = {
-    pedido_id: "P" + Date.now().toString(36).toUpperCase().slice(-5),
-    criado_em: new Date().toISOString(),
-    cliente: { nome, whatsapp: phone },
-    itens: Object.keys(cart).map(id => {
-      const it = ALL.find(x => x.id === id);
-      return { id, nome: it.nome, quantidade: cart[id], preco_unitario: it.preco, subtotal: +(it.preco * cart[id]).toFixed(2) };
-    }),
-    observacao: f.obs.trim(),
-    total: +total.toFixed(2)
-  };
+  // Só id e quantidade vão ao servidor: o preço é recalculado no n8n a partir do cardápio oficial.
+  // Nova tentativa reaproveita o mesmo pedido_id, para o servidor reconhecer e não duplicar.
+  if (!pedidoPendente) {
+    pedidoPendente = {
+      pedido_id: novoId(),
+      criado_em: new Date().toISOString(),
+      cliente: { nome, whatsapp: phone },
+      itens: Object.keys(cart).map(id => ({ id, quantidade: cart[id] })),
+      observacao: f.obs.trim(),
+      pagamento: { forma: f.forma === "pix" ? "pix" : "balcao", situacao: "pendente" },
+      status: "recebido"
+    };
+  }
+  const pedido = pedidoPendente;
 
   sending = true;
   const btn = $("#send");
-  btn.disabled = true; btn.textContent = "Enviando...";
+  btn.disabled = true; btn.textContent = "Enviando..."; btn.classList.add("carregando");
 
   try {
-    if (WEBHOOK_URL) {
+    let confirmacao;
+    if (CFG.N8N_PEDIDO_URL) {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 15000);
-      const res = await fetch(WEBHOOK_URL, {
+      const res = await fetch(CFG.N8N_PEDIDO_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pedido),
@@ -419,35 +534,140 @@ async function sendOrder() {
       });
       clearTimeout(timer);
       if (!res.ok) throw new Error("HTTP " + res.status);
+      confirmacao = await res.json();   // esperado: { codigo, total }
     } else {
-      console.log("Modo teste (WEBHOOK_URL vazio). Pedido que seria enviado:", pedido);
+      // Modo teste (N8N_PEDIDO_URL vazio): nada é enviado, código e total são simulados.
+      console.log("Modo teste (N8N_PEDIDO_URL vazio). Pedido que seria enviado:", pedido);
+      confirmacao = { codigo: String(Math.floor(1000 + Math.random() * 9000)), total: totals().total };
     }
-    showDone(pedido);
+    if (!confirmacao || !confirmacao.codigo) throw new Error("Resposta sem código de retirada");
+    pedidoPendente = null;
+    btn.classList.replace("carregando", "concluido");   // completa a barra antes de trocar para a confirmação
+    await new Promise(r => setTimeout(r, 350));
+    showDone(pedido, confirmacao);
   } catch (err) {
     console.error(err);
-    btn.disabled = false; btn.textContent = "Enviar pedido";
+    btn.disabled = false; btn.textContent = "Enviar pedido"; btn.classList.remove("carregando");
     $("#err").textContent = "Não conseguimos enviar o pedido. Confira sua conexão e toque em Enviar pedido de novo.";
   } finally {
     sending = false;
   }
 }
 
-function showDone(p) {
+function novoId() {
+  return crypto.randomUUID ? crypto.randomUUID()
+    : Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+async function copiarPix() {
+  try {
+    await navigator.clipboard.writeText(CFG.PIX_CHAVE);
+    $("#copiarPix").textContent = "Chave copiada!";
+  } catch {
+    $("#copiarPix").textContent = "Copie a chave acima";
+  }
+}
+
+function showDone(p, conf) {
   for (const k in cart) delete cart[k];
   ALL.forEach(it => renderCtrl(it.id));
   updateBar();
+  const total = brl(conf.total);
+  const pix = p.pagamento.forma === "pix";
+  const msgZap = encodeURIComponent(`Olá! Segue o comprovante do pedido #${conf.codigo} (${total}).`);
   $("#sheet").innerHTML = `
     <div class="done">
       <div class="ok" aria-hidden="true">✓</div>
       <h2 id="sheetTitle">Pedido enviado!</h2>
+      <p>Código de retirada</p>
+      <div class="codigo-grande">#${conf.codigo}</div>
+      <p>Total: <b>${total}</b></p>
       <p>Assim que a cantina aceitar, você recebe a confirmação no WhatsApp.</p>
-      <div class="code">${p.pedido_id}</div>
+      ${pix ? `
+      <div class="pix">
+        <span class="hint">Pagamento via Pix: ${total}</span>
+        <b>${CFG.PIX_CHAVE}</b>
+        ${CFG.PIX_NOME ? `<div class="hint">Favorecido: ${CFG.PIX_NOME}</div>` : ""}
+        <div class="row">
+          <button id="copiarPix">Copiar chave</button>
+          ${CFG.WHATSAPP_CANTINA ? `<a href="https://wa.me/${CFG.WHATSAPP_CANTINA}?text=${msgZap}" target="_blank" rel="noopener">Enviar comprovante</a>` : ""}
+        </div>
+      </div>` : ""}
       <button class="send" id="again">Fazer outro pedido</button>
     </div>`;
 }
 
+/* ---- cardápio oficial vem da planilha (aba "Cardapio") ---- */
+// Lê pela API gviz via <script>, como o painel faz: é o jeito que funciona sem CORS.
+// Colunas pelo nome do cabeçalho: id | categoria | nome | desc | emoji | preco | disponivel
+function lerAbaCardapio(resp) {
+  if (!resp || resp.status !== "ok" || !resp.table) return null;
+  const col = (n) => resp.table.cols.findIndex(c => String(c.label || "").trim().toLowerCase() === n);
+  const ix = { id: col("id"), categoria: col("categoria"), nome: col("nome"), desc: col("desc"),
+               emoji: col("emoji"), preco: col("preco"), disp: col("disponivel") };
+  // Aba inexistente faz o Google devolver a primeira aba (pedidos): sem o cabeçalho certo, ignora.
+  if ([ix.id, ix.categoria, ix.nome, ix.preco].some(i => i < 0)) return null;
+  const val = (r, i) => (i >= 0 && r.c && r.c[i]) ? r.c[i].v : null;
+  const txt = (r, i) => String(val(r, i) ?? "").trim();
+  return (resp.table.rows || []).map(r => {
+    const bruto = val(r, ix.preco);
+    const preco = typeof bruto === "number" ? bruto : parseFloat(String(bruto ?? "").replace(",", "."));
+    const d = val(r, ix.disp);
+    const esgotado = d === false || ["false", "nao", "não", "n", "0", "esgotado"].includes(String(d ?? "").trim().toLowerCase());
+    return { id: txt(r, ix.id), categoria: txt(r, ix.categoria), nome: txt(r, ix.nome), desc: txt(r, ix.desc),
+             emoji: txt(r, ix.emoji) || "🍽️", preco, disponivel: !esgotado };
+  }).filter(i => i.id && i.nome && i.categoria && Number.isFinite(i.preco) && i.preco > 0);
+}
+
+function aplicarCardapio(lista) {
+  const porCategoria = new Map();
+  lista.forEach(i => {
+    if (!porCategoria.has(i.categoria)) porCategoria.set(i.categoria, []);
+    // A foto segue o id: fotos/<id>.jpg. Sem o arquivo, o card mostra o emoji.
+    porCategoria.get(i.categoria).push({ id: i.id, nome: i.nome, desc: i.desc, preco: i.preco,
+      emoji: i.emoji, foto: `fotos/${i.id}.jpg`, disponivel: i.disponivel });
+  });
+  const novo = [...porCategoria].map(([categoria, itens]) => ({ categoria, itens }));
+  if (JSON.stringify(novo) === JSON.stringify(MENU)) return;   // nada mudou: não redesenha
+
+  MENU = novo;
+  ALL = MENU.flatMap(c => c.itens);
+  // Item que sumiu ou esgotou não pode continuar no carrinho.
+  let removidos = false;
+  for (const id in cart) {
+    const it = ALL.find(x => x.id === id);
+    if (!it || it.disponivel === false) { delete cart[id]; removidos = true; }
+  }
+  if (removidos) {
+    pedidoPendente = null;   // carrinho mudou: o próximo envio é um pedido novo
+    alert("Algum item do seu pedido acabou e foi removido do carrinho.");
+  }
+  renderMenu();
+  updateBar();
+}
+
+// O Google chama esta função com a resposta (parâmetro responseHandler da URL abaixo).
+window.snackCardapio = (resp) => {
+  const lista = lerAbaCardapio(resp);
+  if (lista && lista.length) aplicarCardapio(lista);   // falha ou aba vazia: segue com o que está na tela
+};
+
+function carregarCardapio() {
+  if (!CFG.SHEET_ID) return;
+  // Com a folha do pedido aberta não troca o cardápio por baixo: os preços mudariam durante o envio.
+  if ($("#overlay").classList.contains("open")) return;
+  document.getElementById("script-cardapio")?.remove();
+  const aba = encodeURIComponent(CFG.ABA_CARDAPIO || "Cardapio");
+  const s = document.createElement("script");
+  s.id = "script-cardapio";
+  s.src = `https://docs.google.com/spreadsheets/d/${CFG.SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:snackCardapio&headers=1&sheet=${aba}&t=${Date.now()}`;
+  document.body.appendChild(s);
+}
+
 renderMenu();
 updateBar();
+carregarCardapio();
+setInterval(carregarCardapio, 30000);   // pega preço e "esgotado" alterados no painel sem recarregar a página
 </script>
 </body>
 </html>
