@@ -158,6 +158,34 @@ textarea{resize:vertical;min-height:70px}
 .done .code{display:inline-block;margin:10px 0 18px;background:var(--card);border:2px dashed var(--orange);border-radius:12px;padding:8px 16px;font-weight:800;letter-spacing:.04em}
 @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+
+/* ===== Abertura animada: o "rolô" da cantina sobe e revela o cardápio.
+   Prefixo ab- evita choque com o .mascote do cabeçalho. ===== */
+.abertura{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:hidden;cursor:pointer;
+  background:repeating-linear-gradient(180deg,rgba(107,15,24,0) 0 22px,rgba(107,15,24,.16) 22px 24px),var(--red);
+  animation:ab-sobe .8s cubic-bezier(.7,0,.85,.4) 2.5s forwards}
+.abertura::after{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;background:var(--ink);box-shadow:0 -6px 0 var(--accent)}
+.abertura[hidden]{display:none}
+.ab-palco{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 20px}
+.ab-mascote{width:clamp(140px,40vw,190px);height:auto;transform-origin:50% 100%;animation:ab-cai .75s cubic-bezier(.3,1.4,.5,1) .15s both}
+.ab-chao{width:clamp(90px,26vw,130px);height:12px;border-radius:50%;background:var(--ink);opacity:.35;margin-top:-6px;animation:ab-sombra .75s ease-out .15s both}
+.ab-nome{display:flex;margin-top:14px;font-family:var(--logo);font-size:clamp(4rem,22vw,6.4rem);line-height:1;color:#fff3dc;
+  text-shadow:2px 2px 0 var(--ink),4px 4px 0 var(--ink),6px 6px 0 var(--ink)}
+.ab-nome span{display:inline-block;animation:ab-carimbo .35s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(.8s + var(--i)*.09s)}
+.ab-faixa{margin-top:10px;background:var(--accent);color:var(--ink);font:800 1.05rem var(--head);padding:6px 16px;border:2px solid var(--ink);border-radius:4px;
+  transform:rotate(-2deg);box-shadow:3px 3px 0 var(--ink);animation:ab-faixa .4s cubic-bezier(.2,.9,.3,1) 1.5s both}
+@keyframes ab-cai{0%{transform:translateY(-70vh) scale(.9,1.1)}55%{transform:translateY(0) scale(1.12,.88)}75%{transform:translateY(-14px) scale(.97,1.04)}100%{transform:none}}
+@keyframes ab-sombra{0%{transform:scale(.3);opacity:0}55%{transform:scale(1.1);opacity:.4}100%{transform:scale(1);opacity:.35}}
+@keyframes ab-carimbo{0%{opacity:0;transform:scale(1.9) rotate(-8deg)}100%{opacity:1;transform:none}}
+@keyframes ab-faixa{0%{opacity:0;transform:rotate(-2deg) scaleX(0)}100%{opacity:1;transform:rotate(-2deg) scaleX(1)}}
+@keyframes ab-sobe{to{transform:translateY(-102%)}}
+/* O cardápio já desliga todas as animações para quem pede menos movimento (regra acima),
+   então nesse caso a abertura é só o logo parado e o JS a fecha por tempo. */
+/* Transição (e não animação) continua valendo, então o fade suave funciona mesmo assim. */
+@media (prefers-reduced-motion:reduce){.ab-faixa{transform:rotate(-2deg)}}
+.abertura.ab-reduzido{opacity:0;transition:opacity .5s ease}
+.abertura.ab-reduzido.ab-visivel{opacity:1}
+.abertura.ab-reduzido.ab-saindo{opacity:0;transition-duration:.7s}
 </style>
 </head>
 <body>
@@ -246,6 +274,17 @@ textarea{resize:vertical;min-height:70px}
   </svg>
 </div>
 
+
+<!-- Abertura: aparece a cada carregamento (ver script no fim). Toque para pular. -->
+<div class="abertura" id="abertura" role="presentation" aria-hidden="true" hidden>
+  <div class="ab-palco">
+    <svg class="ab-mascote" viewBox="-8 0 216 240"><use href="#mascote"/></svg>
+    <div class="ab-chao"></div>
+    <div class="ab-nome"><span style="--i:0">S</span><span style="--i:1">n</span><span style="--i:2">a</span><span style="--i:3">c</span><span style="--i:4">k</span></div>
+    <div class="ab-faixa">Cantina do Campus</div>
+  </div>
+</div>
+
 <header>
   <div class="wrap head">
     <div class="brand">
@@ -268,6 +307,29 @@ textarea{resize:vertical;min-height:70px}
   <div class="sheet" id="sheet"></div>
 </div>
 
+<script>
+/* Abertura: roda a cada carregamento da página.
+   Fica oculta no HTML e só é mostrada aqui, então sem JS o cardápio abre direto. */
+(() => {
+  const abertura = document.getElementById("abertura");
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fechar = () => { abertura.hidden = true; };
+  abertura.addEventListener("click", fechar);
+  abertura.addEventListener("animationend", (e) => { if (e.animationName === "ab-sobe") fechar(); });
+  if (reduzido) {
+    // Sem movimento: o logo aparece e some em fade. Usa transição, que a regra global não desliga.
+    abertura.classList.add("ab-reduzido");
+    abertura.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => abertura.classList.add("ab-visivel")));
+    setTimeout(() => abertura.classList.replace("ab-visivel", "ab-saindo"), 1500);
+    setTimeout(fechar, 2300);
+  } else {
+    abertura.hidden = false;
+    // Rede de segurança: se a animação não rodar (aba em segundo plano), fecha por tempo em vez de prender o aluno.
+    setTimeout(fechar, 3800);
+  }
+})();
+</script>
 <script src="config.js"></script>
 <script>
 /* ============================================================
