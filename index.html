@@ -371,36 +371,39 @@ let MENU = [
    ============================================================ */
 const $ = (s) => document.querySelector(s);
 const brl = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// Todo texto que vem de fora (planilha, resposta do n8n, campos do formulário) passa por aqui
+// antes de entrar em innerHTML: um "<" no nome de um item não pode virar código na página.
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let ALL = MENU.flatMap(c => c.itens);
 // Ícone de cada categoria na barra. Só visual: o MENU não muda. Categoria nova sem ícone usa o de lanche.
 const ICONES = { Salgados: "i-salgado", Lanches: "i-lanche", Pizzas: "i-pizza", "Porções": "i-batata", Bebidas: "i-bebida", Doces: "i-doce" };
-const iconeDe = (cat) => `<svg aria-hidden="true"><use href="#${ICONES[cat] || "i-lanche"}"/></svg>`;
-const cart = {};          // { id: quantidade }
+const iconeDe = (cat) => `<svg aria-hidden="true"><use href="#${Object.hasOwn(ICONES, cat) ? ICONES[cat] : "i-lanche"}"/></svg>`;
+const cart = Object.create(null);   // { id: quantidade }; sem protótipo, um id como "constructor" não confunde as contas
 let sending = false;
 let pedidoPendente = null; // pedido não confirmado: reenvio usa o mesmo pedido_id (evita duplicata)
 
 /* ---- cardápio ---- */
 function renderMenu() {
   $("#chips").innerHTML = MENU.map((c, i) =>
-    `<button class="cat" data-cat="cat-${i}" ${i === 0 ? 'aria-current="true"' : ""}>${iconeDe(c.categoria)}<span>${c.categoria}</span></button>`
+    `<button class="cat" data-cat="cat-${i}" ${i === 0 ? 'aria-current="true"' : ""}>${iconeDe(c.categoria)}<span>${esc(c.categoria)}</span></button>`
   ).join("");
 
   $("#menu").innerHTML = MENU.map((c, i) => `
     <section id="cat-${i}">
-      <h2>${c.categoria}</h2>
+      <h2>${esc(c.categoria)}</h2>
       <div class="itens">
       ${c.itens.map(it => `
         <article class="item vidro ${it.disponivel === false ? "esgotado" : ""}">
           <div class="foto">
-            <span class="sem" aria-hidden="true">${it.emoji}</span>
-            ${it.foto ? `<img src="${it.foto}" alt="${it.nome}" loading="lazy" onerror="this.remove()">` : ""}
+            <span class="sem" aria-hidden="true">${esc(it.emoji)}</span>
+            ${it.foto ? `<img src="${esc(it.foto)}" alt="${esc(it.nome)}" loading="lazy" onerror="this.remove()">` : ""}
           </div>
           <div class="info">
-            <b>${it.nome}</b><small>${it.desc}</small>
+            <b>${esc(it.nome)}</b><small>${esc(it.desc)}</small>
             <div class="price">${brl(it.preco)}</div>
             ${it.disponivel === false ? '<span class="tag-esgotado">Esgotado</span>' : ""}
           </div>
-          <div data-ctrl="${it.id}"></div>
+          <div data-ctrl="${esc(it.id)}"></div>
         </article>`).join("")}
       </div>
     </section>`).join("");
@@ -410,13 +413,13 @@ function renderMenu() {
 
 function renderCtrl(id) {
   const q = cart[id] || 0;
-  const el = document.querySelector(`[data-ctrl="${id}"]`);
+  const el = document.querySelector(`[data-ctrl="${CSS.escape(id)}"]`);
   if (!el) return;
   el.innerHTML = q
-    ? `<div class="qty"><button data-dec="${id}" aria-label="Tirar um">−</button><span>${q}</span><button data-inc="${id}" aria-label="Adicionar mais um">+</button></div>`
+    ? `<div class="qty"><button data-dec="${esc(id)}" aria-label="Tirar um">−</button><span>${q}</span><button data-inc="${esc(id)}" aria-label="Adicionar mais um">+</button></div>`
     : indisponivel(id)
       ? `<button class="add" disabled>Esgotado</button>`
-      : `<button class="add" data-inc="${id}">Adicionar</button>`;
+      : `<button class="add" data-inc="${esc(id)}">Adicionar</button>`;
 }
 
 function indisponivel(id) {
@@ -494,8 +497,8 @@ function renderSheet(keep = {}) {
   const lines = Object.keys(cart).map(id => {
     const it = ALL.find(x => x.id === id);
     return `<div class="line">
-      <div class="n"><b>${it.nome}</b><small>${brl(it.preco)} cada</small></div>
-      <div class="qty"><button data-dec="${id}" aria-label="Tirar um">−</button><span>${cart[id]}</span><button data-inc="${id}" aria-label="Adicionar mais um">+</button></div>
+      <div class="n"><b>${esc(it.nome)}</b><small>${brl(it.preco)} cada</small></div>
+      <div class="qty"><button data-dec="${esc(id)}" aria-label="Tirar um">−</button><span>${cart[id]}</span><button data-inc="${esc(id)}" aria-label="Adicionar mais um">+</button></div>
       <b>${brl(it.preco * cart[id])}</b>
     </div>`;
   }).join("");
@@ -506,10 +509,10 @@ function renderSheet(keep = {}) {
     <div class="total"><span>Total</span><span>${brl(total)}</span></div>
 
     <label for="nome">Seu nome</label>
-    <input id="nome" autocomplete="name" value="${keep.nome || ""}">
+    <input id="nome" autocomplete="name" value="${esc(keep.nome)}">
 
     <label for="zap">Seu WhatsApp</label>
-    <input id="zap" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" value="${keep.zap || ""}">
+    <input id="zap" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" value="${esc(keep.zap)}">
     <div class="hint">Vamos avisar por aqui quando o pedido for aceito.</div>
 
     ${CFG.PIX_CHAVE ? `
@@ -520,7 +523,7 @@ function renderSheet(keep = {}) {
     </div>` : ""}
 
     <label for="obs">Observação (opcional)</label>
-    <textarea id="obs" placeholder="Ex.: sem cebola, suco de maracujá">${keep.obs || ""}</textarea>
+    <textarea id="obs" placeholder="Ex.: sem cebola, suco de maracujá">${esc(keep.obs)}</textarea>
 
     <div class="error" id="err" role="alert"></div>
     <button class="send" id="send">Enviar pedido</button>`;
@@ -595,7 +598,12 @@ async function sendOrder() {
         signal: ctrl.signal
       });
       clearTimeout(timer);
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      if (!res.ok) {
+        // 4xx traz o motivo (item esgotado, limite de pedidos em aberto): mostra ao aluno
+        // em vez de mandar conferir a conexão, que não resolveria nada.
+        const motivo = res.status < 500 ? (await res.json().catch(() => ({}))).erro : "";
+        throw Object.assign(new Error("HTTP " + res.status), { motivo });
+      }
       confirmacao = await res.json();   // esperado: { codigo, total }
     } else {
       // Modo teste (N8N_PEDIDO_URL vazio): nada é enviado, código e total são simulados.
@@ -610,7 +618,8 @@ async function sendOrder() {
   } catch (err) {
     console.error(err);
     btn.disabled = false; btn.textContent = "Enviar pedido"; btn.classList.remove("carregando");
-    $("#err").textContent = "Não conseguimos enviar o pedido. Confira sua conexão e toque em Enviar pedido de novo.";
+    $("#err").textContent = err.motivo ? String(err.motivo)
+      : "Não conseguimos enviar o pedido. Confira sua conexão e toque em Enviar pedido de novo.";
   } finally {
     sending = false;
   }
@@ -634,25 +643,26 @@ function showDone(p, conf) {
   for (const k in cart) delete cart[k];
   ALL.forEach(it => renderCtrl(it.id));
   updateBar();
-  const total = brl(conf.total);
+  const total = esc(brl(Number(conf.total)));
+  const codigo = esc(conf.codigo);
   const pix = p.pagamento.forma === "pix";
-  const msgZap = encodeURIComponent(`Olá! Segue o comprovante do pedido #${conf.codigo} (${total}).`);
+  const msgZap = encodeURIComponent(`Olá! Segue o comprovante do pedido #${conf.codigo} (${brl(Number(conf.total))}).`);
   $("#sheet").innerHTML = `
     <div class="done">
       <div class="ok" aria-hidden="true">✓</div>
       <h2 id="sheetTitle">Pedido enviado!</h2>
       <p>Código de retirada</p>
-      <div class="codigo-grande">#${conf.codigo}</div>
+      <div class="codigo-grande">#${codigo}</div>
       <p>Total: <b>${total}</b></p>
       <p>Assim que a cantina aceitar, você recebe a confirmação no WhatsApp.</p>
       ${pix ? `
       <div class="pix">
         <span class="hint">Pagamento via Pix: ${total}</span>
-        <b>${CFG.PIX_CHAVE}</b>
-        ${CFG.PIX_NOME ? `<div class="hint">Favorecido: ${CFG.PIX_NOME}</div>` : ""}
+        <b>${esc(CFG.PIX_CHAVE)}</b>
+        ${CFG.PIX_NOME ? `<div class="hint">Favorecido: ${esc(CFG.PIX_NOME)}</div>` : ""}
         <div class="row">
           <button id="copiarPix">Copiar chave</button>
-          ${CFG.WHATSAPP_CANTINA ? `<a href="https://wa.me/${CFG.WHATSAPP_CANTINA}?text=${msgZap}" target="_blank" rel="noopener">Enviar comprovante</a>` : ""}
+          ${CFG.WHATSAPP_CANTINA ? `<a href="https://wa.me/${encodeURIComponent(String(CFG.WHATSAPP_CANTINA).replace(/\D/g, ""))}?text=${msgZap}" target="_blank" rel="noopener">Enviar comprovante</a>` : ""}
         </div>
       </div>` : ""}
       <button class="send" id="again">Fazer outro pedido</button>
